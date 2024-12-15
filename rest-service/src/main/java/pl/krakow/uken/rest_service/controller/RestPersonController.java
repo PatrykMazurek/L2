@@ -1,8 +1,10 @@
 package pl.krakow.uken.rest_service.controller;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import pl.krakow.uken.rest_service.model.Person;
 import pl.krakow.uken.rest_service.repository.RestPersonRepository;
@@ -41,7 +44,14 @@ public class RestPersonController {
                 @RequestHeader("key")String key ){
         p.setCreated_at(LocalDateTime.now());
         p.setUpdated_at(LocalDateTime.now());
+        String url = "http://localhost:8090/add";
+        RestTemplate rest = new RestTemplate();
         Person savePerson = repository.save(p);
+        savePerson.getId();
+        HashMap<String, Object> obj = new HashMap<>();
+        obj.put("personId", savePerson.getId());
+        obj.put("email", p.getEmail());
+        rest.postForObject(url, obj, String.class);
         if (savePerson != null){
             return ResponseEntity.ok().body("dodano rekord");
         }else{
